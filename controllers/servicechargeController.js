@@ -40,6 +40,16 @@ exports.getServiceChargeById = async (req, res) => {
         res.status(500).json({ message: err.message });
     }
 };
+// Get a single service charge by ID
+exports.getServiceChargeByUserId = async (req, res) => {
+    try {
+        const serviceCharge = await Servicecharge.find({fld_service_provider_id : req.params.id});
+        if (!serviceCharge) return res.status(404).json({ message: 'Service charge not found' });
+        res.json(serviceCharge);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+};
 
 // Update a service charge by ID
 exports.updateServiceCharge = async (req, res) => {

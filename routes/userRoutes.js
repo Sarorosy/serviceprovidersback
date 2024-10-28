@@ -8,6 +8,8 @@ const {
   deleteUser,
   loginUser,
   getServiceProviders,
+  getActiveServiceProviders,
+  getInActiveServiceProviders,
   getServiceProviderById,
   getServiceProviderFindById,
   updatePassword,
@@ -89,6 +91,8 @@ const profileStorage = multer.diskStorage({
 // CRUD routes
 router.get('/', getUsers);
 router.get('/serviceproviders', getServiceProviders);
+router.get('/activeserviceproviders', getActiveServiceProviders);
+router.get('/inactiveserviceproviders', getInActiveServiceProviders);
 router.get('/:id', getServiceProviderById);
 router.get('/find/:id', getServiceProviderFindById);
 router.put('/:id/password', updatePassword);

@@ -19,6 +19,22 @@ exports.getServiceProviders = async (req, res) => {
     res.status(500).json({ error: 'Server Error' });
   }
 };
+exports.getActiveServiceProviders = async (req, res) => {
+  try {
+    const users = await User.find({fld_admin_type : "SERVICE_PROVIDER", status : "Active"});
+    res.status(200).json(users);
+  } catch (error) {
+    res.status(500).json({ error: 'Server Error' });
+  }
+};
+exports.getInActiveServiceProviders = async (req, res) => {
+  try {
+    const users = await User.find({fld_admin_type : "SERVICE_PROVIDER", status : "Inactive"});
+    res.status(200).json(users);
+  } catch (error) {
+    res.status(500).json({ error: 'Server Error' });
+  }
+};
 
 exports.getServiceProviderById = async (req, res) => {
   try {

@@ -11,6 +11,9 @@ router.post('/', servicechargeController.createServiceCharge);
 // GET a specific service charge by ID
 router.get('/:id', servicechargeController.getServiceChargeById);
 
+// GET a specific service charge by ID
+router.get('/user/:id', servicechargeController.getServiceChargeByUserId);
+
 // PUT update a service charge by ID
 router.put('/:id', servicechargeController.updateServiceCharge);
 
