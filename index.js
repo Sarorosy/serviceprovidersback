@@ -44,7 +44,7 @@ app.listen(PORT, () => {
 // Set up a cron job to ping the server every 13 minutes
 cron.schedule('*/13 * * * *', async () => {
   try {
-    await axios.get('https://serviceprovidersback.onrender.com');
+    await axios.get('https://serviceprovidersback.onrender.com/api/servicecharge/');
     console.log('Pinged the server to keep it awake');
   } catch (error) {
     console.error('Error pinging the server:', error.message);
