@@ -41,7 +41,7 @@ exports.getWorkoffByIdFirstCollection = async (req, res) => {
 
 // Create a new workoff
 exports.createWorkoff = async (req, res) => {
-    const { id, fld_adminid, fld_workoffs_startdate, fld_workoffs_enddate, fld_total_no_of_work_offs, fld_work_offs_availed, fld_work_offs_balance, fld_addedon, fld_updated_at, fld_from_to_dates } = req.body;
+    const { fld_adminid, fld_workoffs_startdate, fld_workoffs_enddate, fld_total_no_of_work_offs, fld_work_offs_availed, fld_work_offs_balance, fld_addedon, fld_updated_at, fld_from_to_dates } = req.body;
 
     const newWorkoff = new ManageWorkoff({
         fld_adminid,
@@ -62,6 +62,7 @@ exports.createWorkoff = async (req, res) => {
         res.status(400).json({ message: error.message });
     }
 };
+
 
 // Update a workoff
 exports.updateWorkoff = async (req, res) => {

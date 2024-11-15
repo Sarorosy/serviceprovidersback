@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const WorkoffSchema = new mongoose.Schema({
     id: {
         type: Number,
-        unique: true, // Ensure this is unique
+       // unique: true, // Ensure this is unique
     },
     fld_adminid: {
         type: mongoose.Schema.Types.ObjectId, // Reference to Users._id

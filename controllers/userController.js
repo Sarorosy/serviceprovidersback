@@ -82,13 +82,11 @@ exports.createUser = async (req, res) => {
     // Create a user object with the request body
      // Access uploaded files
      const profileImage = req.files['fld_profile_image'] ? req.files['fld_profile_image'][0].filename : null;
-     const aadharCard = req.files['fld_aadharcard'] ? req.files['fld_aadharcard'][0].filename : null;
-     const panCard = req.files['fld_pancard'] ? req.files['fld_pancard'][0].filename : null;
-     const cancelledChequeImage = req.files['fld_cancelledchequeimage'] ? req.files['fld_cancelledchequeimage'][0].filename : null;
- 
+    const aadharCard = req.files['fld_aadharcard'] ? req.files['fld_aadharcard'][0].filename : null;
+    const panCard = req.files['fld_pancard'] ? req.files['fld_pancard'][0].filename : null;
+    const cancelledChequeImage = req.files['fld_cancelledchequeimage'] ? req.files['fld_cancelledchequeimage'][0].filename : null;
      const userData = {
        fld_adminid: req.body.fld_adminid ? req.body.fld_adminid : 1,
-       id:nextId,
        fld_username: req.body.fld_username,
        fld_name: req.body.fld_name,
        fld_email: req.body.fld_email,

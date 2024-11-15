@@ -15,15 +15,15 @@ const ManageWorkoffSchema = new mongoose.Schema({
         required: true,
     },
     fld_total_no_of_work_offs: {
-        type: String,
+        type: Number,
         required: true,
     },
     fld_work_offs_availed: {
-        type: String,
+        type: Number,
         required: true,
     },
     fld_work_offs_balance: {
-        type: String,
+        type: Number,
         required: true,
     },
     fld_addedon: {
