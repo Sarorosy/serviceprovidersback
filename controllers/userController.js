@@ -76,55 +76,88 @@ exports.getServiceProviderFindById = async (req, res) => {
 // Create a new user
 exports.createUser = async (req, res) => {
   try {
-
     const lastUser = await User.findOne().sort({ id: -1 }); // Sort by id in descending order
     const nextId = lastUser ? lastUser.id + 1 : 150;
-    // Create a user object with the request body
-     // Access uploaded files
-     const profileImage = req.files['fld_profile_image'] ? req.files['fld_profile_image'][0].filename : null;
-    const aadharCard = req.files['fld_aadharcard'] ? req.files['fld_aadharcard'][0].filename : null;
-    const panCard = req.files['fld_pancard'] ? req.files['fld_pancard'][0].filename : null;
-    const cancelledChequeImage = req.files['fld_cancelledchequeimage'] ? req.files['fld_cancelledchequeimage'][0].filename : null;
-     const userData = {
-       fld_adminid: req.body.fld_adminid ? req.body.fld_adminid : 1,
-       fld_username: req.body.fld_username,
-       fld_name: req.body.fld_name,
-       fld_email: req.body.fld_email,
-       fld_phone: req.body.fld_phone,
-       fld_decrypt_password: req.body.fld_password,
-       fld_address: req.body.fld_address,
-       fld_gender: req.body.fld_gender,
-       fld_designation: req.body.fld_designation,
-       fld_aadhar: req.body.fld_aadhar,
-       fld_start_date: req.body.fld_start_date,
-       fld_end_date: req.body.fld_end_date ? req.body.fld_end_date : "",
-       fld_bankname: req.body.fld_bankname,
-       fld_accountno: req.body.fld_accountno,
-       fld_branch: req.body.fld_branch,
-       fld_ifsc: req.body.fld_ifsc,
-       fld_aadharcard: aadharCard, // Save the file name
-       fld_pancard: panCard, // Save the file name
-       fld_cancelledchequeimage: cancelledChequeImage, // Save the file name
-       fld_profile_image: profileImage, // Save the file name
-       fld_addedon: new Date() // Current date and time
-     };
 
-     if (userData.fld_password) {
-      userData.fld_password = await bcrypt.hash(userData.fld_decrypt_password, 10);
-    } else {
+    // Access uploaded files and default to null if no files are provided
+    let profileImage = req.body.fld_profile_image === "null" || req.body.fld_profile_image === null
+      ? null
+      : req.body.fld_profile_image || null;
+
+    let aadharCard = req.body.fld_aadharcard === "null" || req.body.fld_aadharcard === null
+      ? null
+      : req.body.fld_aadharcard || null;
+
+    let panCard = req.body.fld_pancard === "null" || req.body.fld_pancard === null
+      ? null
+      : req.body.fld_pancard || null;
+
+    let cancelledChequeImage = req.body.fld_cancelledchequeimage === "null" || req.body.fld_cancelledchequeimage === null
+      ? null
+      : req.body.fld_cancelledchequeimage || null;
+
+    // Check for uploaded files and update file paths if files are present
+    if (req.files) {
+      if (req.files['fld_profile_image']) {
+        profileImage = req.files['fld_profile_image'][0].filename;
+      }
+      if (req.files['fld_aadharcard']) {
+        aadharCard = req.files['fld_aadharcard'][0].filename;
+      }
+      if (req.files['fld_pancard']) {
+        panCard = req.files['fld_pancard'][0].filename;
+      }
+      if (req.files['fld_cancelledchequeimage']) {
+        cancelledChequeImage = req.files['fld_cancelledchequeimage'][0].filename;
+      }
+    }
+
+    // Ensure password is provided
+    if (!req.body.fld_password) {
       return res.status(400).json({ error: 'Password is required' });
     }
-    
+
+    // Hash the password before storing
+    const hashedPassword = await bcrypt.hash(req.body.fld_password, 10);
+
+    // Create user data object
+    const userData = {
+      fld_adminid: req.body.fld_adminid || 1, // Default to 1 if not provided
+      fld_username: req.body.fld_username,
+      fld_name: req.body.fld_name,
+      fld_email: req.body.fld_email,
+      fld_phone: req.body.fld_phone,
+      fld_decrypt_password: req.body.fld_password,
+      fld_password: hashedPassword, // Store hashed password
+      fld_address: req.body.fld_address,
+      fld_gender: req.body.fld_gender,
+      fld_designation: req.body.fld_designation,
+      fld_aadhar: req.body.fld_aadhar,
+      fld_start_date: req.body.fld_start_date,
+      fld_end_date: req.body.fld_end_date || "",
+      fld_bankname: req.body.fld_bankname,
+      fld_accountno: req.body.fld_accountno,
+      fld_branch: req.body.fld_branch,
+      fld_ifsc: req.body.fld_ifsc,
+      fld_aadharcard: aadharCard,
+      fld_pancard: panCard,
+      fld_cancelledchequeimage: cancelledChequeImage,
+      fld_profile_image: profileImage,
+      fld_addedon: new Date() // Set the current date and time
+    };
 
     // Create and save the new user
     const user = new User(userData);
     await user.save();
+
+    // Return the created user
     res.status(201).json(user);
   } catch (error) {
     console.error(error); // Log the error for debugging
-    res.status(400).json({ error: 'Bad Request' });
+    res.status(400).json({ error: 'Bad Request', message: error.message });
   }
 };
+
 
 exports.updateUser = async (req, res) => {
   try {
