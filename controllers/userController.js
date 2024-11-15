@@ -76,8 +76,8 @@ exports.getServiceProviderFindById = async (req, res) => {
 // Create a new user
 exports.createUser = async (req, res) => {
   try {
-    const lastUser = await User.findOne().sort({ id: -1 }); // Sort by id in descending order
-    const nextId = lastUser ? lastUser.id + 1 : 150;
+    //const lastUser = await User.findOne().sort({ id: -1 }); 
+    //const nextId = lastUser ? lastUser.id + 1 : 150;
 
     // Access uploaded files and default to null if no files are provided
     let profileImage = req.body.fld_profile_image === "null" || req.body.fld_profile_image === null
@@ -111,6 +111,9 @@ exports.createUser = async (req, res) => {
         cancelledChequeImage = req.files['fld_cancelledchequeimage'][0].filename;
       }
     }
+
+    //console.log(req.body); 
+    //return res.status(200).json({ body: req.body });
 
     // Ensure password is provided
     if (!req.body.fld_password) {

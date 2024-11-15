@@ -18,68 +18,43 @@ const {
   toggleStatusForUser,
 } = require('../controllers/userController');
 
-// Set up multer storage configurations for each type of file
-const profileStorage = multer.diskStorage({
+// Set up multer storage configurations
+const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, 'uploads/profileimg');
-  },
-  filename: (req, file, cb) => {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    cb(null, uniqueSuffix + '-' + file.originalname);
-  }
-});
-
-const aadharStorage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, 'uploads/aadharcard');
-  },
-  filename: (req, file, cb) => {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    cb(null, uniqueSuffix + '-' + file.originalname);
-  }
-});
-
-const panStorage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, 'uploads/pancard');
-  },
-  filename: (req, file, cb) => {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    cb(null, uniqueSuffix + '-' + file.originalname);
-  }
-});
-
-const chequeStorage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, 'uploads/cancelledchequeimage');
-  },
-  filename: (req, file, cb) => {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    cb(null, uniqueSuffix + '-' + file.originalname);
-  }
-});
-
-// Define multer for file uploads, only for provided fields
-const upload = multer({
-  storage: (req, file, cb) => {
-    if (file.fieldname == 'fld_profile_image') {
-      cb(null, 'uploads/profileimg');
-    } else if (file.fieldname == 'fld_aadharcard') {
-      cb(null, 'uploads/aadharcard');
-    } else if (file.fieldname == 'fld_pancard') {
-      cb(null, 'uploads/pancard');
-    } else if (file.fieldname == 'fld_cancelledchequeimage') {
-      cb(null, 'uploads/cancelledchequeimage');
-    }else {
-      cb(new Error('Unknown field' + file.fieldname));  // handle unknown fields
+    switch (file.fieldname) {
+      case 'fld_profile_image':
+        cb(null, 'uploads/profileimg');
+        break;
+      case 'fld_aadharcard':
+        cb(null, 'uploads/aadharcard');
+        break;
+      case 'fld_pancard':
+        cb(null, 'uploads/pancard');
+        break;
+      case 'fld_cancelledchequeimage':
+        cb(null, 'uploads/cancelledchequeimage');
+        break;
+      default:
+        // Ignore unknown fields
+        cb(null, false); // Skips saving the file
+        break;
     }
   },
-  limits: {
-    fileSize: 10 * 1024 * 1024, // Example: limit file size to 10MB
+  filename: (req, file, cb) => {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
+    cb(null, uniqueSuffix + '-' + file.originalname);
   }
 });
 
-// Handle multiple file uploads conditionally
+// Define multer middleware
+const upload = multer({
+  storage,
+  limits: {
+    fileSize: 10 * 1024 * 1024, // 10 MB limit
+  }
+});
+
+// Handle multiple file uploads
 const multiUpload = upload.fields([
   { name: 'fld_profile_image', maxCount: 1 },
   { name: 'fld_aadharcard', maxCount: 1 },
@@ -95,7 +70,7 @@ router.get('/inactiveserviceproviders', getInActiveServiceProviders);
 router.get('/:id', getServiceProviderById);
 router.get('/find/:id', getServiceProviderFindById);
 router.put('/:id/password', updatePassword);
-router.post('/', multiUpload, createUser);
+router.post('/new', multiUpload, createUser);
 router.put('/:id', multiUpload, updateUser);
 router.delete('/:id', deleteUser);
 router.post('/login', loginUser);

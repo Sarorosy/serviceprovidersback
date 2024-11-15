@@ -32,7 +32,7 @@ const userSchema = new mongoose.Schema({
   fld_phone: String,
   fld_gender: {
     type: String,
-    enum: ['Male', 'Female'],
+    default: null
   },
   fld_marital: {
     type: String,
