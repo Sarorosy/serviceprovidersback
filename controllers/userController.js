@@ -91,7 +91,7 @@ exports.createUser = async (req, res) => {
        fld_name: req.body.fld_name,
        fld_email: req.body.fld_email,
        fld_phone: req.body.fld_phone,
-       fld_decrypt_password: req.body.fld_decrypt_password,
+       fld_decrypt_password: req.body.fld_password,
        fld_address: req.body.fld_address,
        fld_gender: req.body.fld_gender,
        fld_designation: req.body.fld_designation,
@@ -109,7 +109,7 @@ exports.createUser = async (req, res) => {
        fld_addedon: new Date() // Current date and time
      };
 
-     if (userData.fld_decrypt_password) {
+     if (userData.fld_password) {
       userData.fld_password = await bcrypt.hash(userData.fld_decrypt_password, 10);
     } else {
       return res.status(400).json({ error: 'Password is required' });
