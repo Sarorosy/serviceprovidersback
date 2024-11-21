@@ -1,6 +1,7 @@
 const User = require('../models/User');
 const bcrypt = require('bcryptjs');
 const LoginHistory = require('../models/LoginHistory');
+const Notification = require('../models/Notification');
 
 // Get all users
 exports.getUsers = async (req, res) => {
@@ -141,6 +142,7 @@ exports.createUser = async (req, res) => {
       fld_bankname: req.body.fld_bankname,
       fld_accountno: req.body.fld_accountno,
       fld_branch: req.body.fld_branch,
+      location: req.body.location,
       fld_ifsc: req.body.fld_ifsc,
       fld_aadharcard: aadharCard,
       fld_pancard: panCard,
@@ -152,6 +154,7 @@ exports.createUser = async (req, res) => {
     // Create and save the new user
     const user = new User(userData);
     await user.save();
+
 
     // Return the created user
     res.status(201).json(user);
@@ -176,12 +179,15 @@ exports.updateUser = async (req, res) => {
       fld_name: req.body.fld_name || user.fld_name,
       fld_email: req.body.fld_email || user.fld_email,
       fld_phone: req.body.fld_phone || user.fld_phone,
+      location: req.body.location || user.location,
       fld_address: req.body.fld_address || user.fld_address,
       fld_gender: req.body.fld_gender || user.fld_gender,
       fld_designation: req.body.fld_designation || user.fld_designation,
       fld_bankname: req.body.fld_bankname || user.fld_bankname,
       fld_accountno: req.body.fld_accountno || user.fld_accountno,
+      fld_aadhar: req.body.fld_aadhar || user.fld_aadhar,
       fld_branch: req.body.fld_branch || user.fld_branch,
+      location:req.body.location || user.location,
       fld_ifsc: req.body.fld_ifsc || user.fld_ifsc,
       fld_addedon: new Date(), // Update the timestamp
     };
@@ -196,6 +202,10 @@ exports.updateUser = async (req, res) => {
       : req.body.fld_end_date || user.fld_end_date;
 
     // Handle nullable fields for file uploads
+    updateData.fld_profile_image = (req.body.fld_profile_image === "null" || req.body.fld_profile_image === null)
+      ? null
+      : req.body.fld_profile_image || user.fld_profile_image;
+
     updateData.fld_aadharcard = (req.body.fld_aadharcard === "null" || req.body.fld_aadharcard === null)
       ? null
       : req.body.fld_aadharcard || user.fld_aadhar;

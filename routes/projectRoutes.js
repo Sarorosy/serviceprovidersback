@@ -8,7 +8,7 @@ router.get('/', projectController.getAllProjects);
 router.get('/:id', projectController.getProjectById);
 router.get('/user/:id', projectController.getProjectByAdminId);
 // Create a new project
-router.post('/', projectController.createProject);
+router.post('/new', projectController.createProject);
 
 // Update a project
 router.put('/:id', projectController.updateProject);

@@ -2,7 +2,7 @@ const Holiday = require('../models/Holiday.js');
 
 // Create a new holiday
 exports.createHoliday = async (req, res) => {
-    const { fld_adminid, fld_userid, fld_title, fld_holiday_date } = req.body;
+    const { fld_adminid, location, fld_title, fld_holiday_date } = req.body;
   
     try {
       const lastHoliday = await Holiday.findOne({}, { id: 1 }).sort({ id: -1 }).limit(1);
@@ -11,7 +11,7 @@ exports.createHoliday = async (req, res) => {
       const holiday = new Holiday({
         id: newId, // Make sure to include the id field here
         fld_adminid,
-        fld_userid,
+        location,
         fld_title,
         fld_holiday_date,
       });
@@ -70,11 +70,11 @@ exports.getHolidaysByUserid = async (req, res) => {
 
     // Find holidays where the fld_holiday_date is greater than the current date
     const holidays = await Holiday.find({
-      fld_userid: { $in: [id] },
+      location: { $in: [id] },
       fld_holiday_date: { $gt: currentDate }, // Upcoming holidays only
     })
       .populate('fld_adminid')
-      .populate('fld_userid');
+      .populate('location');
     
     if (!holidays || holidays.length === 0) {
       return res.status(404).json({ message: 'No upcoming holidays found for this user' });

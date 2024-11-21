@@ -1,5 +1,7 @@
 const mongoose = require('mongoose');
 
+const Location = require('./Location');
+
 const userSchema = new mongoose.Schema({
   fld_adminid: {
     type: Number,
@@ -27,6 +29,11 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true,
     unique: true,
+  },
+  location: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Location', // The name of the Location model
+    required: true, // Set this to false if location is optional
   },
   fld_profile_image: String,
   fld_phone: String,

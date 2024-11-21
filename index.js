@@ -25,6 +25,8 @@ app.use('/api/notifications', require('./routes/notificationRoutes'));
 app.use('/api/holidays', require('./routes/holidayRoutes'));
 app.use('/api/worksummaries', require('./routes/worksummaryRoutes'));
 app.use('/api/projects',require('./routes/projectRoutes'));
+app.use('/api/locations', require('./routes/locationRoutes'));
+app.use('/api/endservices', require('./routes/endservicesRoutes'));
 app.use('/api/manageworkoffs',require('./routes/manageworkoffsRoutes'));
 app.use('/api/workoffs',require('./routes/workoffsRoutes'));
 app.use('/api/login-history', require('./routes/loginHistoryRoutes'));

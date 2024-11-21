@@ -45,10 +45,6 @@ const WorkoffSchema = new mongoose.Schema({
     fld_work_offs_end_date_half: {
         type: Date,
     },
-    fld_leave_type: {
-        type: String,
-        required: true,
-    },
     fld_month: {
         type: Number,
     },

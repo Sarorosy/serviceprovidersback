@@ -5,11 +5,15 @@ const NotificationSchema = new mongoose.Schema({
     type: Number, // Use Number for admin ID
     required: true,
   },
-  fld_userid: [{
+  location: [{
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'User', // Refers to the User model (or ServiceProvider model)
+    ref: 'Location', // Refers to the User model (or ServiceProvider model)
     required: true
   }],  
+  isforall: {
+    type: Boolean,
+    default: false, // Default value is false
+  },
   fld_title: {
     type: String,
     required: true,

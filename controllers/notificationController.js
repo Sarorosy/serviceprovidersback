@@ -3,12 +3,13 @@ const Notification = require('../models/Notification.js');
 
 // Create a new notification
 exports.createNotification = async (req, res) => {
-  const { fld_adminid, fld_userid, fld_title, fld_description, fld_upload_file, fld_due_date } = req.body;
+  const { fld_adminid, location, isForAll, fld_title, fld_description, fld_upload_file, fld_due_date } = req.body;
 
   try {
     const notification = new Notification({
       fld_adminid,
-      fld_userid,
+      location,
+      isforall:isForAll,
       fld_title,
       fld_description,
       fld_upload_file,
@@ -25,7 +26,7 @@ exports.createNotification = async (req, res) => {
 // Get all notifications
 exports.getNotifications = async (req, res) => {
   try {
-    const notifications = await Notification.find().populate('fld_adminid').populate('fld_userid');
+    const notifications = await Notification.find().populate('fld_adminid').populate('location');
     return res.status(200).json(notifications);
   } catch (error) {
     return res.status(500).json({ message: 'Error fetching notifications', error: error.message });
@@ -36,7 +37,7 @@ exports.getNotification = async (req, res) => {
   try {
     const notification = await Notification.findById(req.params.id)
     .populate('fld_adminid')
-    .populate('fld_userid');
+    .populate('location');
     return res.status(200).json(notification);
   } catch (error) {
     return res.status(500).json({ message: 'Error fetching notifications', error: error.message });
@@ -62,9 +63,9 @@ exports.getNotificationByUserid = async (req, res) => {
   const { id } = req.params; // assuming 'id' is the user ID
 
   try {
-    const notifications = await Notification.find({ fld_userid: { $in: [id] } })
+    const notifications = await Notification.find({ location: { $in: [id] } })
       .populate('fld_adminid')
-      .populate('fld_userid');
+      .populate('location');
     
     if (!notifications || notifications.length === 0) {
       return res.status(404).json({ message: 'No notifications found for this user' });

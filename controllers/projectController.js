@@ -39,9 +39,8 @@ exports.getProjectById = async (req, res) => {
   
 // Create a new project
 exports.createProject = async (req, res) => {
-  const { id, fld_adminid, fld_title, fld_addedon, status } = req.body;
+  const { fld_adminid, fld_title, fld_addedon, status } = req.body;
   const newProject = new Project({
-    id,
     fld_adminid,
     fld_title,
     fld_addedon,

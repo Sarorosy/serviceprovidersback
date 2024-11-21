@@ -11,9 +11,9 @@ const HolidaySchema = new mongoose.Schema({
         type: Number, // Admin ID as a Number
         required: true,
     },
-    fld_userid: [{
+    location: [{
         type: Schema.Types.ObjectId, // Array of ObjectIds for multiple users
-        ref: 'User', // Referencing the 'users' collection
+        ref: 'Location', // Referencing the 'users' collection
         required: true,
     }],
     fld_title: {
