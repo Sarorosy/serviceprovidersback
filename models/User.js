@@ -9,7 +9,7 @@ const userSchema = new mongoose.Schema({
   },
   fld_admin_type: {
     type: String,
-    enum: ['SUPERADMIN', 'SERVICE_PROVIDER'],
+    enum: ['SUPERADMIN', 'SERVICE_PROVIDER', 'SUBADMIN'], // Added SUBADMIN role
     default: 'SERVICE_PROVIDER',
   },
   fld_username: {
@@ -76,6 +76,59 @@ const userSchema = new mongoose.Schema({
     default: null, // Optional: explicitly allow null
   },
   fld_total_work_offs: String,
+
+  // Access control fields for SUBADMIN
+  notification_add_access: {
+    type: Boolean,
+    default: false,
+  },
+  notification_edit_access: {
+    type: Boolean,
+    default: false,
+  },
+  notification_delete_access: {
+    type: Boolean,
+    default: false,
+  },
+
+  holiday_add_access: {
+    type: Boolean,
+    default: false,
+  },
+  holiday_edit_access: {
+    type: Boolean,
+    default: false,
+  },
+  holiday_delete_access: {
+    type: Boolean,
+    default: false,
+  },
+
+  location_add_access: {
+    type: Boolean,
+    default: false,
+  },
+  location_edit_access: {
+    type: Boolean,
+    default: false,
+  },
+  location_delete_access: {
+    type: Boolean,
+    default: false,
+  },
+
+  user_add_access: {
+    type: Boolean,
+    default: false,
+  },
+  user_edit_access: {
+    type: Boolean,
+    default: false,
+  },
+  user_delete_access: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 const User = mongoose.model('User', userSchema);

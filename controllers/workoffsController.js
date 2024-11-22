@@ -82,6 +82,79 @@ exports.createWorkoff = async (req, res) => {
     }
 };
 
+exports.calculateLeaveBalance = async (req, res) => {
+    const { start_date, fld_adminid } = req.body;
+
+    if (!start_date || !fld_adminid) {
+        return res.status(400).json({ message: "start_date and fld_adminid are required." });
+    }
+
+    try {
+        const startDate = new Date(start_date);
+        const now = new Date();
+
+        console.log("Start Date:", startDate);
+        console.log("Now Date:", now);
+
+        // Calculate the month difference between start_date and now
+        const monthDifference = (now.getFullYear() - startDate.getFullYear()) * 12 + (now.getMonth() - startDate.getMonth());
+
+        // If the month difference is less than or equal to 8, accumulate 0.5 leaves per month
+        let totalAccumulatedLeaves = monthDifference <= 8 ? monthDifference * 0.5 : 8;
+
+        // Debugging the query
+        console.log("Fetching workoffs for admin:", fld_adminid);
+        console.log("Date Range for Query: ", startDate, now);
+
+        // Fetch workoffs for the admin (leaves taken)
+        const workoffs = await Workoff.find({
+            fld_adminid,
+            fld_addedon: { $gte: startDate, $lte: now }  // If you want to filter by fld_addedon
+        });
+        
+
+        console.log("Fetched Workoffs:", workoffs); // Debugging to ensure workoffs are fetched correctly
+
+        // Calculate total leaves taken from workoffs
+        let totalLeavesTaken = 0;
+        workoffs.forEach((workoff) => {
+            const duration = parseFloat(workoff.fld_duration) || 0; // Ensure fld_duration is parsed as a number
+            console.log(`Adding duration for workoff: ${duration}`); // Debugging for each workoff
+            totalLeavesTaken += duration;
+        });
+
+        // Ensure totalLeavesTaken is correctly calculated
+        console.log("Total Leaves Taken:", totalLeavesTaken); // Debugging total leaves taken
+
+        // Calculate leave balance (accumulated leaves - leaves taken)
+        let leaveBalance = totalAccumulatedLeaves - totalLeavesTaken;
+
+        // Ensure leave balance is non-negative
+        leaveBalance = Math.max(leaveBalance, 0);
+
+        // Return response with calculated values
+        res.status(200).json({
+            totalLeavesAllowed: 8, // Total leaves allowed for the year
+            leaveBalance: leaveBalance,
+            totalLeavesTaken: totalLeavesTaken,
+            totalAccumulatedLeaves: totalAccumulatedLeaves, // Total accumulated leaves for the year
+        });
+    } catch (error) {
+        console.error("Error calculating leave balance:", error);
+        res.status(500).json({ message: "An error occurred while calculating leave balance." });
+    }
+};
+
+
+
+
+
+
+
+
+
+
+
 // Update a workoff
 exports.updateWorkoff = async (req, res) => {
     const { id } = req.params;

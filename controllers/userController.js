@@ -14,7 +14,8 @@ exports.getUsers = async (req, res) => {
 };
 exports.getServiceProviders = async (req, res) => {
   try {
-    const users = await User.find({fld_admin_type : "SERVICE_PROVIDER"});
+    const users = await User.find({ fld_admin_type: { $ne: "SUPERADMIN" } });
+
     res.status(200).json(users);
   } catch (error) {
     res.status(500).json({ error: 'Server Error' });
@@ -22,7 +23,7 @@ exports.getServiceProviders = async (req, res) => {
 };
 exports.getActiveServiceProviders = async (req, res) => {
   try {
-    const users = await User.find({fld_admin_type : "SERVICE_PROVIDER", status : "Active"});
+    const users = await User.find({fld_admin_type : { $ne: "SUPERADMIN" }, status : "Active"});
     res.status(200).json(users);
   } catch (error) {
     res.status(500).json({ error: 'Server Error' });
@@ -30,7 +31,7 @@ exports.getActiveServiceProviders = async (req, res) => {
 };
 exports.getInActiveServiceProviders = async (req, res) => {
   try {
-    const users = await User.find({fld_admin_type : "SERVICE_PROVIDER", status : "Inactive"});
+    const users = await User.find({fld_admin_type : { $ne: "SUPERADMIN" }, status : "Inactive"});
     res.status(200).json(users);
   } catch (error) {
     res.status(500).json({ error: 'Server Error' });
@@ -133,6 +134,19 @@ exports.createUser = async (req, res) => {
       fld_phone: req.body.fld_phone,
       fld_decrypt_password: req.body.fld_password,
       fld_password: hashedPassword, // Store hashed password
+      fld_admin_type:req.body.fld_admin_type,
+      notification_add_access: req.body.notification_add_access,
+      notification_edit_access: req.body.notification_edit_access,
+      notification_delete_access: req.body.notification_delete_access,
+      holiday_add_access: req.body.holiday_add_access,
+      holiday_edit_access: req.body.holiday_edit_access,
+      holiday_delete_access: req.body.holiday_delete_access,
+      location_add_access: req.body.location_add_access,
+      location_edit_access: req.body.location_edit_access,
+      location_delete_access: req.body.location_delete_access,
+      user_add_access: req.body.user_add_access,
+      user_edit_access: req.body.user_edit_access,
+      user_delete_access: req.body.user_delete_access,
       fld_address: req.body.fld_address,
       fld_gender: req.body.fld_gender,
       fld_designation: req.body.fld_designation,
@@ -187,6 +201,19 @@ exports.updateUser = async (req, res) => {
       fld_accountno: req.body.fld_accountno || user.fld_accountno,
       fld_aadhar: req.body.fld_aadhar || user.fld_aadhar,
       fld_branch: req.body.fld_branch || user.fld_branch,
+      fld_admin_type:req.body.fld_admin_type || user.fld_admin_type,
+      notification_add_access: req.body.notification_add_access || user.notification_add_access,
+      notification_edit_access: req.body.notification_edit_access  || user.notification_edit_access,
+      notification_delete_access: req.body.notification_delete_access  || user.notification_delete_access,
+      holiday_add_access: req.body.holiday_add_access  || user.holiday_add_access,
+      holiday_edit_access: req.body.holiday_edit_access  || user.holiday_edit_access,
+      holiday_delete_access: req.body.holiday_delete_access  || user.holiday_delete_access,
+      location_add_access: req.body.location_add_access  || user.location_add_access,
+      location_edit_access: req.body.location_edit_access  || user.location_edit_access,
+      location_delete_access: req.body.location_delete_access  || user.location_delete_access,
+      user_add_access: req.body.user_add_access  || user.user_add_access,
+      user_edit_access: req.body.user_edit_access  || user.user_edit_access,
+      user_delete_access: req.body.user_delete_access  || user.user_delete_access,
       location:req.body.location || user.location,
       fld_ifsc: req.body.fld_ifsc || user.fld_ifsc,
       fld_addedon: new Date(), // Update the timestamp

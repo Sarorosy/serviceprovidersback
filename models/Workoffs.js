@@ -19,8 +19,12 @@ const WorkoffSchema = new mongoose.Schema({
         required: true,
     },
     fld_duration: {
-        type: Number,
+        type: mongoose.Schema.Types.Decimal128,
         required: true,
+        validate: {
+            validator: (value) => value >= 0,
+            message: "fld_duration must be a non-negative decimal.",
+        },
     },
     fld_reason: {
         type: String,

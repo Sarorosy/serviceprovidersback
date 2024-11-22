@@ -20,4 +20,6 @@ router.put('/:id', workoffsController.updateWorkoff);
 // Delete a workoff
 router.delete('/:id', workoffsController.deleteWorkoff);
 
+router.post('/calculate-leave-balance', workoffsController.calculateLeaveBalance);
+
 module.exports = router;
