@@ -2,6 +2,9 @@ const User = require('../models/User');
 const bcrypt = require('bcryptjs');
 const LoginHistory = require('../models/LoginHistory');
 const Notification = require('../models/Notification');
+const mongoose = require('mongoose');
+const axios = require('axios');
+const FormData = require('form-data');
 
 // Get all users
 exports.getUsers = async (req, res) => {
@@ -23,7 +26,7 @@ exports.getServiceProviders = async (req, res) => {
 };
 exports.getActiveServiceProviders = async (req, res) => {
   try {
-    const users = await User.find({fld_admin_type : { $ne: "SUPERADMIN" }, status : "Active"});
+    const users = await User.find({ fld_admin_type: { $ne: "SUPERADMIN" }, status: "Active" });
     res.status(200).json(users);
   } catch (error) {
     res.status(500).json({ error: 'Server Error' });
@@ -31,7 +34,7 @@ exports.getActiveServiceProviders = async (req, res) => {
 };
 exports.getInActiveServiceProviders = async (req, res) => {
   try {
-    const users = await User.find({fld_admin_type : { $ne: "SUPERADMIN" }, status : "Inactive"});
+    const users = await User.find({ fld_admin_type: { $ne: "SUPERADMIN" }, status: "Inactive" });
     res.status(200).json(users);
   } catch (error) {
     res.status(500).json({ error: 'Server Error' });
@@ -53,7 +56,7 @@ exports.getServiceProviderById = async (req, res) => {
     if (!serviceProvider) {
       return res.status(404).json({ message: 'Service provider not found for' + id });
     }
-    
+
     res.status(200).json(serviceProvider);
   } catch (error) {
     res.status(500).json({ error: 'Server Error' });
@@ -62,14 +65,14 @@ exports.getServiceProviderById = async (req, res) => {
 exports.getServiceProviderFindById = async (req, res) => {
   try {
     const { id } = req.params;
-    
+
 
     // Fetch the service provider by the numeric 'id'
     const serviceProvider = await User.findById(id);
     if (!serviceProvider) {
       return res.status(404).json({ message: 'Service provider not found for' + id });
     }
-    
+
     res.status(200).json(serviceProvider);
   } catch (error) {
     res.status(500).json({ error: 'Server Error' });
@@ -134,7 +137,7 @@ exports.createUser = async (req, res) => {
       fld_phone: req.body.fld_phone,
       fld_decrypt_password: req.body.fld_password,
       fld_password: hashedPassword, // Store hashed password
-      fld_admin_type:req.body.fld_admin_type,
+      fld_admin_type: req.body.fld_admin_type,
       notification_add_access: req.body.notification_add_access,
       notification_edit_access: req.body.notification_edit_access,
       notification_delete_access: req.body.notification_delete_access,
@@ -169,6 +172,47 @@ exports.createUser = async (req, res) => {
     const user = new User(userData);
     await user.save();
 
+    const emailBody = new FormData();
+    // emailBody.append('webname', "Service provider platform");
+     emailBody.append('from', "info@thehrbulb.com");
+      emailBody.append('to', req.body.fld_email);
+      emailBody.append('name',req.body.fld_name);
+     emailBody.append('subject', `Account created on Service provider platform`);
+     emailBody.append('body', `
+       Hi ${req.body.fld_name},<br/><br/>
+       Greetings from Service provider platform!<br/><br/>
+       Your account has been successfully created. You can login using the following credentials:<br/><br/>
+       <strong>URL: </strong>https://elementk.in/service-providers-panel<br/>
+       <strong>Email: </strong>${req.body.fld_email}<br/>
+       <strong>Password: </strong>${req.body.fld_password}<br/><br/>
+       Thanks & Regards,<br/>
+       Service provider platform<br/>
+     `);
+ 
+     // Send email notification
+     await axios.post('https://apacvault.com/sppanelregmail.php', emailBody, {
+       headers: emailBody.getHeaders(),
+     });
+
+     const emailSP = new FormData();
+      emailSP.append('from', "info@thehrbulb.com");
+      emailSP.append('to', req.body.fld_email); // Send this email to the service provider's email
+      emailSP.append('name', req.body.fld_name);
+      emailSP.append('subject', `Update Profile and Bank Details`);
+      emailSP.append('body', `
+        Hi ${req.body.fld_name},<br/><br/>
+        Greetings from Service provider platform!<br/><br/>
+        We are excited to have you onboard. To complete your profile, please update your profile documents and bank details.<br/><br/>
+        Please follow the link below to update your details:<br/><br/>
+        <strong>URL: </strong>https://elementk.in/service-providers-panel/manage-profile<br/><br/>
+        Thanks & Regards,<br/>
+        Service provider platform<br/>
+      `);
+
+      // Send email to the SP for profile and bank details update
+      await axios.post('https://apacvault.com/sppanelregmail.php', emailSP, {
+        headers: emailSP.getHeaders(),
+      });
 
     // Return the created user
     res.status(201).json(user);
@@ -182,7 +226,7 @@ exports.createUser = async (req, res) => {
 exports.updateUser = async (req, res) => {
   try {
     const { id } = req.params;
-    
+
     // Find the user by ID
     const user = await User.findById(id);
     if (!user) return res.status(404).json({ error: 'User not found' });
@@ -201,31 +245,31 @@ exports.updateUser = async (req, res) => {
       fld_accountno: req.body.fld_accountno || user.fld_accountno,
       fld_aadhar: req.body.fld_aadhar || user.fld_aadhar,
       fld_branch: req.body.fld_branch || user.fld_branch,
-      fld_admin_type:req.body.fld_admin_type || user.fld_admin_type,
+      fld_admin_type: req.body.fld_admin_type || user.fld_admin_type,
       notification_add_access: req.body.notification_add_access || user.notification_add_access,
-      notification_edit_access: req.body.notification_edit_access  || user.notification_edit_access,
-      notification_delete_access: req.body.notification_delete_access  || user.notification_delete_access,
-      holiday_add_access: req.body.holiday_add_access  || user.holiday_add_access,
-      holiday_edit_access: req.body.holiday_edit_access  || user.holiday_edit_access,
-      holiday_delete_access: req.body.holiday_delete_access  || user.holiday_delete_access,
-      location_add_access: req.body.location_add_access  || user.location_add_access,
-      location_edit_access: req.body.location_edit_access  || user.location_edit_access,
-      location_delete_access: req.body.location_delete_access  || user.location_delete_access,
-      user_add_access: req.body.user_add_access  || user.user_add_access,
-      user_edit_access: req.body.user_edit_access  || user.user_edit_access,
-      user_delete_access: req.body.user_delete_access  || user.user_delete_access,
-      location:req.body.location || user.location,
+      notification_edit_access: req.body.notification_edit_access || user.notification_edit_access,
+      notification_delete_access: req.body.notification_delete_access || user.notification_delete_access,
+      holiday_add_access: req.body.holiday_add_access || user.holiday_add_access,
+      holiday_edit_access: req.body.holiday_edit_access || user.holiday_edit_access,
+      holiday_delete_access: req.body.holiday_delete_access || user.holiday_delete_access,
+      location_add_access: req.body.location_add_access || user.location_add_access,
+      location_edit_access: req.body.location_edit_access || user.location_edit_access,
+      location_delete_access: req.body.location_delete_access || user.location_delete_access,
+      user_add_access: req.body.user_add_access || user.user_add_access,
+      user_edit_access: req.body.user_edit_access || user.user_edit_access,
+      user_delete_access: req.body.user_delete_access || user.user_delete_access,
+      location: req.body.location || user.location,
       fld_ifsc: req.body.fld_ifsc || user.fld_ifsc,
       fld_addedon: new Date(), // Update the timestamp
     };
 
     // Handle nullable fields
-    updateData.fld_start_date = (req.body.fld_start_date === "null" || req.body.fld_start_date === null) 
-      ? null 
+    updateData.fld_start_date = (req.body.fld_start_date === "null" || req.body.fld_start_date === null)
+      ? null
       : req.body.fld_start_date || user.fld_start_date;
 
-    updateData.fld_end_date = (req.body.fld_end_date === "null" || req.body.fld_end_date === null) 
-      ? null 
+    updateData.fld_end_date = (req.body.fld_end_date === "null" || req.body.fld_end_date === null)
+      ? null
       : req.body.fld_end_date || user.fld_end_date;
 
     // Handle nullable fields for file uploads
@@ -251,15 +295,32 @@ exports.updateUser = async (req, res) => {
         updateData.fld_profile_image = req.files['fld_profile_image'][0].filename;
       }
       if (req.files['fld_aadharcard']) {
-        updateData.fld_aadharcard = req.files['fld_aadharcard'][0].filename;
+        const newFileName = req.files['fld_aadharcard'][0].filename;
+        if (newFileName !== user.fld_aadharcard) { // Check if it's a new file
+          updateData.fld_aadharcard = newFileName;
+          updateData.aadharaccess = 0; // Set to 0 only if it's new
+          updateData.aadharapproved = false;
+        }
       }
       if (req.files['fld_pancard']) {
-        updateData.fld_pancard = req.files['fld_pancard'][0].filename;
+        const newFileName = req.files['fld_pancard'][0].filename;
+        if (newFileName !== user.fld_pancard) { // Check if it's a new file
+          updateData.fld_pancard = newFileName;
+          updateData.pancardaccess = 0; // Set to 0 only if it's new
+          updateData.pancardapproved = false;
+        }
       }
       if (req.files['fld_cancelledchequeimage']) {
-        updateData.fld_cancelledchequeimage = req.files['fld_cancelledchequeimage'][0].filename;
+        const newFileName = req.files['fld_cancelledchequeimage'][0].filename;
+        if (newFileName !== user.fld_cancelledchequeimage) { // Check if it's a new file
+          updateData.fld_cancelledchequeimage = newFileName;
+          updateData.chequeaccess = 0; // Set to 0 only if it's new
+          updateData.cancelledchequeapproved = false;
+        }
       }
     }
+    
+
     if (req.body.fld_decrypt_password) {
       const hashedPassword = await bcrypt.hash(req.body.fld_decrypt_password, 10);
       updateData.fld_password = hashedPassword;
@@ -268,7 +329,7 @@ exports.updateUser = async (req, res) => {
 
     // Update the user
     const updatedUser = await User.findByIdAndUpdate(id, updateData, { new: true });
-    
+
     res.status(200).json(updatedUser);
   } catch (error) {
     console.error(error); // Log the error for debugging
@@ -342,46 +403,46 @@ exports.loginUser = async (req, res) => {
   const { username, password } = req.body;
 
   try {
-      // Check if user exists
-      const user = await User.findOne({ fld_username: username });
-      if (!user) {
-          return res.status(401).json({ message: 'Invalid username or password' });
-      }
+    // Check if user exists
+    const user = await User.findOne({ fld_username: username });
+    if (!user) {
+      return res.status(401).json({ message: 'Invalid username or password' });
+    }
 
-      // Validate password using bcrypt
-      const isMatch = await bcrypt.compare(password, user.fld_password);
-      if (!isMatch) {
-          return res.status(401).json({ message: 'Invalid username or password' });
-      }
+    // Validate password using bcrypt
+    const isMatch = await bcrypt.compare(password, user.fld_password);
+    if (!isMatch) {
+      return res.status(401).json({ message: 'Invalid username or password' });
+    }
 
-      // If successful, return user data (you can also create a JWT token here)
-      res.status(200).json({ message: 'Login successful', user });
+    // If successful, return user data (you can also create a JWT token here)
+    res.status(200).json({ message: 'Login successful', user });
 
-      const today = new Date();
-      const loginDate = today.toISOString().split('T')[0]; // Format: YYYY-MM-DD
-      const startTime = today.toTimeString().split(' ')[0]; // Format: HH:MM:SS
-      const addedOn = today; // Full datetime
+    const today = new Date();
+    const loginDate = today.toISOString().split('T')[0]; // Format: YYYY-MM-DD
+    const startTime = today.toTimeString().split(' ')[0]; // Format: HH:MM:SS
+    const addedOn = today; // Full datetime
 
-      // Check for existing login record for today
-      const existingLogin = await LoginHistory.findOne({
-          fld_user_id: user._id, // Use the user ID from the user document
-          fld_login_date: loginDate
+    // Check for existing login record for today
+    const existingLogin = await LoginHistory.findOne({
+      fld_user_id: user._id, // Use the user ID from the user document
+      fld_login_date: loginDate
+    });
+
+    // If no login record found, create a new record
+    if (!existingLogin) {
+      const newLoginRecord = new LoginHistory({
+        fld_user_id: user._id,
+        fld_login_date: loginDate,
+        fld_start_time: startTime,
+        fld_added_on: addedOn
       });
 
-      // If no login record found, create a new record
-      if (!existingLogin) {
-          const newLoginRecord = new LoginHistory({
-              fld_user_id: user._id,
-              fld_login_date: loginDate,
-              fld_start_time: startTime,
-              fld_added_on: addedOn
-          });
-
-          await newLoginRecord.save(); // Save the new login record
-      }
+      await newLoginRecord.save(); // Save the new login record
+    }
   } catch (error) {
-      console.error(error); // Log error for debugging
-      res.status(500).json({ error: 'Server Error' });
+    console.error(error); // Log error for debugging
+    res.status(500).json({ error: 'Server Error' });
   }
 };
 
@@ -390,48 +451,138 @@ exports.logoutUser = async (req, res) => {
   const userId = req.user.id; // Assuming you're using some middleware to get the authenticated user's ID
 
   try {
-      const today = new Date();
-      const loginDate = today.toISOString().split('T')[0]; // Format: YYYY-MM-DD
-      const endTime = today.toTimeString().split(' ')[0]; // Format: HH:MM:SS
+    const today = new Date();
+    const loginDate = today.toISOString().split('T')[0]; // Format: YYYY-MM-DD
+    const endTime = today.toTimeString().split(' ')[0]; // Format: HH:MM:SS
 
-      // Find the login history record for today
-      const loginRecord = await LoginHistory.findOne({
-          fld_user_id: userId,
-          fld_login_date: loginDate
-      });
+    // Find the login history record for today
+    const loginRecord = await LoginHistory.findOne({
+      fld_user_id: userId,
+      fld_login_date: loginDate
+    });
 
-      if (!loginRecord) {
-          return res.status(404).json({ message: 'No login record found for today' });
-      }
+    if (!loginRecord) {
+      return res.status(404).json({ message: 'No login record found for today' });
+    }
 
-      // Update the end time
-      loginRecord.fld_end_time = endTime;
-      await loginRecord.save();
+    // Update the end time
+    loginRecord.fld_end_time = endTime;
+    await loginRecord.save();
 
-      res.status(200).json({ message: 'Logout successful', loginRecord });
+    res.status(200).json({ message: 'Logout successful', loginRecord });
   } catch (error) {
-      console.error(error); // Log the error for debugging
-      res.status(500).json({ error: 'Server Error' });
+    console.error(error); // Log the error for debugging
+    res.status(500).json({ error: 'Server Error' });
   }
 };
 
 // Update all users' fld_password to bcrypt hash of fld_decrypt_password
 exports.updateAllPasswords = async (req, res) => {
   try {
-      const users = await User.find(); // Get all users
+    const users = await User.find(); // Get all users
 
-      for (const user of users) {
-          // Hash fld_decrypt_password
-          const hashedPassword = await bcrypt.hash(user.fld_decrypt_password, 10);
-          // Update fld_password
-          user.fld_password = hashedPassword;
-          await user.save(); // Save the updated user
-      }
+    for (const user of users) {
+      // Hash fld_decrypt_password
+      const hashedPassword = await bcrypt.hash(user.fld_decrypt_password, 10);
+      // Update fld_password
+      user.fld_password = hashedPassword;
+      await user.save(); // Save the updated user
+    }
 
-      res.status(200).json({ message: 'All passwords updated successfully.' });
+    res.status(200).json({ message: 'All passwords updated successfully.' });
   } catch (error) {
-      console.error(error); // Log the error for debugging
-      res.status(500).json({ error: 'Server Error' });
+    console.error(error); // Log the error for debugging
+    res.status(500).json({ error: 'Server Error' });
+  }
+};
+
+exports.approveFile = async (req, res) => {
+  const { fileType, serviceProviderId } = req.body;
+
+  // Ensure both parameters are provided
+  if (!fileType || !serviceProviderId) {
+    return res.status(400).json({ error: 'FileType and ServiceProviderId are required' });
+  }
+
+  try {
+    // Cast serviceProviderId to ObjectId
+    const userId = new mongoose.Types.ObjectId(serviceProviderId);
+
+    // Find the user by serviceProviderId (which is the user._id)
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    // Check which file type is being approved and update the corresponding field
+    switch (fileType) {
+      case 'aadhar':
+        user.aadharapproved = true; // Mark Aadhar as approved
+        break;
+      case 'pancard':
+        user.pancardapproved = true; // Mark Pancard as approved
+        break;
+      case 'cancelledcheque':
+        user.cancelledchequeapproved = true; // Mark Cancelled Cheque as approved
+        break;
+      default:
+        return res.status(400).json({ error: 'Invalid file type' });
+    }
+
+    // Save the user with updated approval status
+    await user.save();
+    res.status(200).json({ status: true, message: `${fileType} approved successfully` });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Server Error' });
+  }
+};
+exports.fileRequest = async (req, res) => {
+  const { fileType, serviceProviderId, code } = req.body;
+
+  // Ensure both parameters are provided
+  if (!fileType || !serviceProviderId || !code) {
+    return res.status(400).json({ error: 'FileType and ServiceProviderId and code are required' });
+  }
+
+  try {
+    // Cast serviceProviderId to ObjectId
+    const userId = new mongoose.Types.ObjectId(serviceProviderId);
+
+    // Find the user by serviceProviderId (which is the user._id)
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    // Check which file type is being approved and update the corresponding field
+    switch (fileType) {
+      case 'aadhar':
+        user.aadharaccess = code; // Mark Aadhar as approved
+        break;
+      case 'pancard':
+        user.pancardaccess = code; // Mark Pancard as approved
+        break;
+      case 'cancelledcheque':
+        user.chequeaccess = code; // Mark Cancelled Cheque as approved
+        break;
+      default:
+        return res.status(400).json({ error: 'Invalid file type' });
+    }
+
+    // Save the user with updated approval status
+    await user.save();
+    const responseMessage = code == 1
+      ? "Request Sent Successfully"
+      : code == 2
+        ? "Request Approved Successfully"
+        : "Invalid Code";
+
+    res.status(200).json({ status: true, message: responseMessage });
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Server Error' });
   }
 };
 

@@ -16,6 +16,8 @@ const {
   updateAllPasswords,
   logoutUser,
   toggleStatusForUser,
+  approveFile,
+  fileRequest,
 } = require('../controllers/userController');
 
 // Set up multer storage configurations
@@ -77,5 +79,8 @@ router.post('/login', loginUser);
 router.post('/logout', logoutUser);
 router.patch('/update-passwords', updateAllPasswords);
 router.patch('/:id/status', toggleStatusForUser);
-
+// New route to handle file approval
+router.patch('/approvefile', approveFile);
+router.post('/approvefiles', approveFile);
+router.post('/filerequest', fileRequest);
 module.exports = router;

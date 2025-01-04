@@ -33,7 +33,6 @@ const userSchema = new mongoose.Schema({
   location: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Location', // The name of the Location model
-    required: true, // Set this to false if location is optional
   },
   fld_profile_image: String,
   fld_phone: String,
@@ -67,6 +66,31 @@ const userSchema = new mongoose.Schema({
   fld_aadharcard: String,
   fld_pancard: String,
   fld_cancelledchequeimage: String,
+   // New fields for approval status
+   aadharapproved: {
+    type: Boolean,
+    default: false,
+  },
+  pancardapproved: {
+    type: Boolean,
+    default: false,
+  },
+  cancelledchequeapproved: {
+    type: Boolean,
+    default: true,
+  },
+  aadharaccess: {
+    type: Number,
+    default: 0,
+  },
+  pancardaccess: {
+    type: Number,
+    default: 0,
+  },
+  chequeaccess: {
+    type: Number,
+    default: 0,
+  },
   fld_start_date: {
     type: Date,
     default: null, // Optional: explicitly allow null
