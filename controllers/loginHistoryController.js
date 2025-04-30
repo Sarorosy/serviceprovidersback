@@ -1,4 +1,7 @@
 const LoginHistory = require('../models/LoginHistory');
+const User = require('../models/User');
+const moment = require('moment');
+
 
 // Create a new login history entry
 exports.createLoginHistory = async (req, res) => {
@@ -64,5 +67,44 @@ exports.deleteLoginHistory = async (req, res) => {
     res.status(200).json({ message: 'Login history deleted successfully' });
   } catch (error) {
     res.status(500).json({ message: 'Error deleting login history', error });
+  }
+};
+
+
+exports.checkLoginStatus = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.json({ status: 'false', message: 'Email is required' });
+    }
+
+    // Get users with this email, sorted by _id descending
+    const users = await User.find({ fld_email: email }).sort({ _id: -1 });
+
+    if (users.length === 0) {
+      return res.json({ status: 'false', message: 'User not found' });
+    }
+
+    const user = users[0];
+
+    // Define today and tomorrow for date range check
+    const today = moment().utc().startOf('day').toDate();
+    const tomorrow = moment().utc().add(1, 'day').startOf('day').toDate();
+
+    // Check if there's a login record for today
+    const login = await LoginHistory.findOne({
+      fld_user_id: user._id,
+      fld_login_date: { $gte: today, $lt: tomorrow }
+    });
+
+    if (login) {
+      return res.json({ status: 'true', message: 'Loggedin' });
+    } else {
+      return res.json({ status: 'true', message: 'Leave' });
+    }
+
+  } catch (error) {
+    return res.json({ status: 'false', message: 'Server error' });
   }
 };

@@ -1,6 +1,9 @@
 const express = require('express');
 const router = express.Router();
-const {createLoginHistory, getAllLoginHistory,updateLoginHistory,deleteLoginHistory,getAllLoginHistoryById} = require('../controllers/loginHistoryController');
+const {createLoginHistory, getAllLoginHistory,updateLoginHistory,deleteLoginHistory,getAllLoginHistoryById, checkLoginStatus} = require('../controllers/loginHistoryController');
+
+
+
 // Create a new login history entry
 router.post('/', createLoginHistory);
 
@@ -13,5 +16,5 @@ router.put('/:id', updateLoginHistory);
 
 // Delete a login history entry
 router.delete('/:id', deleteLoginHistory);
-
+router.post('/check-login-status', checkLoginStatus);
 module.exports = router;

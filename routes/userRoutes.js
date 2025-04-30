@@ -18,6 +18,8 @@ const {
   toggleStatusForUser,
   approveFile,
   fileRequest,
+  checkWebCode,
+  checkQuitStatus
 } = require('../controllers/userController');
 
 // Set up multer storage configurations
@@ -83,4 +85,7 @@ router.patch('/:id/status', toggleStatusForUser);
 router.patch('/approvefile', approveFile);
 router.post('/approvefiles', approveFile);
 router.post('/filerequest', fileRequest);
+
+router.post('/check-web-code', checkWebCode);
+router.post('/check-quit-status', checkQuitStatus);
 module.exports = router;

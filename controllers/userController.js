@@ -258,6 +258,7 @@ exports.updateUser = async (req, res) => {
       user_add_access: req.body.user_add_access || user.user_add_access,
       user_edit_access: req.body.user_edit_access || user.user_edit_access,
       user_delete_access: req.body.user_delete_access || user.user_delete_access,
+      quit_services : req.body.quit_services || user.quit_services,
       location: req.body.location || user.location,
       fld_ifsc: req.body.fld_ifsc || user.fld_ifsc,
       fld_addedon: new Date(), // Update the timestamp
@@ -423,6 +424,20 @@ exports.loginUser = async (req, res) => {
     const startTime = today.toTimeString().split(' ')[0]; // Format: HH:MM:SS
     const addedOn = today; // Full datetime
 
+    const lastCodeDate = user.web_code_date ? new Date(user.web_code_date).toISOString().split('T')[0] : null;
+
+    if (lastCodeDate !== loginDate) {
+      // Generate new web code
+      const webCode = user.fld_admin_type === 'SUPERADMIN'
+        ? '1234'
+        : Math.floor(1000 + Math.random() * 9000).toString(); // 4-digit random
+
+      // Update user with new code and date
+      user.web_code = webCode;
+      user.web_code_date = today;
+      await user.save();
+    }
+
     // Check for existing login record for today
     const existingLogin = await LoginHistory.findOne({
       fld_user_id: user._id, // Use the user ID from the user document
@@ -586,3 +601,63 @@ exports.fileRequest = async (req, res) => {
   }
 };
 
+exports.checkWebCode = async (req, res) => {
+  const { email, code } = req.body;
+
+  if (!email || !code) {
+    return res.json({ status: 'false', message: 'Email and Code are required' });
+  }
+
+  try {
+    // Find the latest user by email
+    const user = await User.find({ fld_email: email })
+      .sort({ fld_addedon: -1 }) // Latest added user if multiple
+      .limit(1);
+
+    if (!user || user.length === 0) {
+      return res.json({ status: 'false', message: 'User not found' });
+    }
+
+    const today = new Date().toISOString().split('T')[0];
+    const userDoc = user[0];
+    const codeDate = userDoc.web_code_date ? new Date(userDoc.web_code_date).toISOString().split('T')[0] : null;
+
+    if (codeDate !== today) {
+      return res.json({ status: 'false', message: 'No code generated for Today' });
+    }
+
+    if (userDoc.web_code !== code) {
+      return res.json({ status: 'false', message: 'Invalid Code' });
+    }
+
+    return res.json({ status: 'true', message: 'Valid Code' });
+
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ status: 'false', message: 'Server Error' });
+  }
+};
+
+exports.checkQuitStatus = async (req, res) => {
+  const { email } = req.body;
+
+  if (!email) {
+    return res.json({ status: 'false', message: 'Email is required' });
+  }
+
+  try {
+    const user = await User.findOne({ fld_email: email }).sort({ _id: -1 });
+
+    if (!user) {
+      return res.json({ status: 'false', message: 'User not found' });
+    }
+
+    if (user.quit_services === true) {
+      return res.json({ status: 'true', message: 'Quit' });
+    } else {
+      return res.json({ status: 'true', message: 'Not Quit' });
+    }
+  } catch (error) {
+    return res.status(500).json({ status: 'false', message: 'Server error', error: error.message });
+  }
+};

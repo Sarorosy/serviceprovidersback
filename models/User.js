@@ -153,6 +153,20 @@ const userSchema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
+  web_code: {
+    type: String,
+    default: null,
+  },
+  web_code_date: {
+    type: Date,
+    default: null,
+  },
+  quit_services: {
+    type: Boolean,
+    default: false,
+  }
+  
+  
 });
 
 const User = mongoose.model('User', userSchema);
