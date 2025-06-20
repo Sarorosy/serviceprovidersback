@@ -19,7 +19,8 @@ const {
   approveFile,
   fileRequest,
   checkWebCode,
-  checkQuitStatus
+  checkQuitStatus,
+  getAbsentServiceProviderEmails
 } = require('../controllers/userController');
 
 // Set up multer storage configurations
@@ -68,6 +69,7 @@ const multiUpload = upload.fields([
 
 // CRUD routes
 router.get('/', getUsers);
+router.get("/absentuserslist", getAbsentServiceProviderEmails);
 router.get('/serviceproviders', getServiceProviders);
 router.get('/activeserviceproviders', getActiveServiceProviders);
 router.get('/inactiveserviceproviders', getInActiveServiceProviders);
@@ -88,4 +90,7 @@ router.post('/filerequest', fileRequest);
 
 router.post('/check-web-code', checkWebCode);
 router.post('/check-quit-status', checkQuitStatus);
+
+
+
 module.exports = router;

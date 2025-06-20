@@ -454,6 +454,24 @@ exports.loginUser = async (req, res) => {
       });
 
       await newLoginRecord.save(); // Save the new login record
+
+      // --- ⏰ Time and day logic ---
+      const currentHour = today.getHours();
+      const currentMinute = today.getMinutes();
+      const day = today.getDay(); // Sunday - 0, Monday - 1, ..., Saturday - 6
+
+      const isWeekday = day >= 1 && day <= 5; // Monday to Friday
+      const isSaturday = day === 6;
+
+      const after10AM = currentHour > 10 || (currentHour === 10 && currentMinute >= 0);
+      const after10_30AM = currentHour > 10 || (currentHour === 10 && currentMinute >= 30);
+
+      if ((isWeekday && after10AM) || (isSaturday && after10_30AM)) {
+        // Make POST request
+        await axios.post('https://webexback-06cc.onrender.com/api/users/autosendloginmessage', {
+          email: user.fld_email
+        });
+      }
     }
   } catch (error) {
     console.error(error); // Log error for debugging
@@ -659,5 +677,40 @@ exports.checkQuitStatus = async (req, res) => {
     }
   } catch (error) {
     return res.status(500).json({ status: 'false', message: 'Server error', error: error.message });
+  }
+};
+
+
+exports.getAbsentServiceProviderEmails = async (req, res) => {
+  try {
+    const today = new Date();
+    const loginDate = today.toISOString().split('T')[0]; // YYYY-MM-DD
+
+    // Step 1: Get all SERVICE_PROVIDER users
+    const serviceProviders = await User.find({ fld_admin_type: 'SERVICE_PROVIDER', status: 'Active'  }, { _id: 1, fld_email: 1 });
+
+    const serviceProviderIds = serviceProviders.map(user => user._id);
+
+    // Step 2: Find login histories for today
+    const loginHistoriesToday = await LoginHistory.find({
+      fld_user_id: { $in: serviceProviderIds },
+      fld_login_date: loginDate
+    }, { fld_user_id: 1 });
+
+    const loggedInUserIds = loginHistoriesToday.map(history => history.fld_user_id.toString());
+
+    // Step 3: Filter service providers who have not logged in
+    const absentEmails = serviceProviders
+      .filter(user => !loggedInUserIds.includes(user._id.toString()))
+      .map(user => user.fld_email);
+    
+      await axios.post('http://webexback-06cc.onrender.com/api/users/autosendleavemessage', {
+          emails: absentEmails
+        });
+
+    return res.status(200).json({ emails: absentEmails });
+  } catch (error) {
+    console.error('Error fetching absent service provider emails:', error);
+    return res.status(500).json({ message: 'Server error', error: error.message });
   }
 };

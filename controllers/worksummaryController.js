@@ -1,5 +1,7 @@
 const Worksummary = require('../models/Worksummary.js');
 const LoginHistory = require('../models/LoginHistory');
+const User = require('../models/User.js');
+const axios = require("axios");
 
 
 // Create a new work summary
@@ -39,6 +41,36 @@ exports.createWorksummary = async (req, res) => {
       // Update the end time
       loginRecord.fld_end_time = endTime;
       await loginRecord.save();
+
+       // ⏰ Time & Day Check
+    const day = today.getDay(); // 0 = Sunday, 6 = Saturday
+    const hours = today.getHours();
+    const minutes = today.getMinutes();
+
+    let shouldCallAxios = false;
+
+    if (day >= 1 && day <= 5) {
+      // Monday to Friday
+      if (hours < 17 || (hours === 17 && minutes < 30)) {
+        shouldCallAxios = true;
+      }
+    } else if (day === 6) {
+      // Saturday
+      if (hours < 14) {
+        shouldCallAxios = true;
+      }
+    }
+
+    // 📤 Make the axios call if allowed
+    if (shouldCallAxios) {
+      const user = await User.findById(fld_adminid);
+      if (user && user.fld_email) {
+        await axios.post('https://webexback-06cc.onrender.com/api/users/autosendleftmessage', {
+          email: user.fld_email
+        });
+      }
+    }
+
     return res.status(201).json({ message: 'Work summary created successfully', worksummary });
   } catch (error) {
     return res.status(500).json({ message: 'Error creating work summary', error: error.message });
