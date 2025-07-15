@@ -714,3 +714,34 @@ exports.getAbsentServiceProviderEmails = async (req, res) => {
     return res.status(500).json({ message: 'Server error', error: error.message });
   }
 };
+
+exports.getAbsentServiceProviderEmailData = async (req, res) => {
+  try {
+    const today = new Date();
+    const loginDate = today.toISOString().split('T')[0]; // YYYY-MM-DD
+
+    // Step 1: Get all SERVICE_PROVIDER users
+    const serviceProviders = await User.find({ fld_admin_type: 'SERVICE_PROVIDER', status: 'Active'  }, { _id: 1, fld_email: 1 });
+
+    const serviceProviderIds = serviceProviders.map(user => user._id);
+
+    // Step 2: Find login histories for today
+    const loginHistoriesToday = await LoginHistory.find({
+      fld_user_id: { $in: serviceProviderIds },
+      fld_login_date: loginDate
+    }, { fld_user_id: 1 });
+
+    const loggedInUserIds = loginHistoriesToday.map(history => history.fld_user_id.toString());
+
+    // Step 3: Filter service providers who have not logged in
+    const absentEmails = serviceProviders
+      .filter(user => !loggedInUserIds.includes(user._id.toString()))
+      .map(user => user.fld_email);
+    
+      
+    return res.status(200).json({ emails: absentEmails });
+  } catch (error) {
+    console.error('Error fetching absent service provider emails:', error);
+    return res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};

@@ -20,7 +20,8 @@ const {
   fileRequest,
   checkWebCode,
   checkQuitStatus,
-  getAbsentServiceProviderEmails
+  getAbsentServiceProviderEmails,
+  getAbsentServiceProviderEmailData
 } = require('../controllers/userController');
 
 // Set up multer storage configurations
@@ -70,6 +71,7 @@ const multiUpload = upload.fields([
 // CRUD routes
 router.get('/', getUsers);
 router.get("/absentuserslist", getAbsentServiceProviderEmails);
+router.get("/absentusersemails", getAbsentServiceProviderEmailData);
 router.get('/serviceproviders', getServiceProviders);
 router.get('/activeserviceproviders', getActiveServiceProviders);
 router.get('/inactiveserviceproviders', getInActiveServiceProviders);

@@ -2,27 +2,27 @@ const Holiday = require('../models/Holiday.js');
 
 // Create a new holiday
 exports.createHoliday = async (req, res) => {
-    const { fld_adminid, location, fld_title, fld_holiday_date } = req.body;
-  
-    try {
-      const lastHoliday = await Holiday.findOne({}, { id: 1 }).sort({ id: -1 }).limit(1);
-      const newId = lastHoliday ? lastHoliday.id + 1 : 1;
-  
-      const holiday = new Holiday({
-        id: newId, // Make sure to include the id field here
-        fld_adminid,
-        location,
-        fld_title,
-        fld_holiday_date,
-      });
-  
-      await holiday.save();
-      return res.status(201).json({ message: 'Holiday created successfully', holiday });
-    } catch (error) {
-      return res.status(500).json({ message: 'Error creating holiday', error: error.message });
-    }
-  };
-  
+  const { fld_adminid, location, fld_title, fld_holiday_date } = req.body;
+
+  try {
+    const lastHoliday = await Holiday.findOne({}, { id: 1 }).sort({ id: -1 }).limit(1);
+    const newId = lastHoliday ? lastHoliday.id + 1 : 1;
+
+    const holiday = new Holiday({
+      id: newId, // Make sure to include the id field here
+      fld_adminid,
+      location,
+      fld_title,
+      fld_holiday_date,
+    });
+
+    await holiday.save();
+    return res.status(201).json({ message: 'Holiday created successfully', holiday });
+  } catch (error) {
+    return res.status(500).json({ message: 'Error creating holiday', error: error.message });
+  }
+};
+
 
 // Get all holidays
 exports.getHolidays = async (req, res) => {
@@ -75,7 +75,7 @@ exports.getHolidaysByUserid = async (req, res) => {
     })
       .populate('fld_adminid')
       .populate('location');
-    
+
     if (!holidays || holidays.length === 0) {
       return res.status(404).json({ message: 'No upcoming holidays found for this user' });
     }
