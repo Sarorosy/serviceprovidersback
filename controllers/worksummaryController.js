@@ -25,24 +25,21 @@ exports.createWorksummary = async (req, res) => {
     await worksummary.save();
 
     const today = new Date();
-      const loginDate = today.toISOString().split('T')[0]; // Format: YYYY-MM-DD
-      const endTime = today.toTimeString().split(' ')[0]; // Format: HH:MM:SS
+    const loginDate = today.toISOString().split('T')[0]; // Format: YYYY-MM-DD
+    const endTime = today.toTimeString().split(' ')[0];  // Format: HH:MM:SS
 
-      // Find the login history record for today
-      const loginRecord = await LoginHistory.findOne({
-          fld_user_id: fld_adminid,
-          fld_login_date: loginDate
-      });
+    const loginRecord = await LoginHistory.findOne({
+      fld_user_id: fld_adminid,
+      fld_login_date: loginDate
+    });
 
-      if (!loginRecord) {
-          return res.status(404).json({ message: 'No login record found for today' });
-      }
+    if (!loginRecord) {
+      return res.status(404).json({ message: 'No login record found for today' });
+    }
 
-      // Update the end time
-      loginRecord.fld_end_time = endTime;
-      await loginRecord.save();
+    loginRecord.fld_end_time = endTime;
+    await loginRecord.save();
 
-       // ⏰ Time & Day Check
     const day = today.getDay(); // 0 = Sunday, 6 = Saturday
     const hours = today.getHours();
     const minutes = today.getMinutes();
@@ -50,29 +47,43 @@ exports.createWorksummary = async (req, res) => {
     let shouldCallAxios = false;
 
     if (day >= 1 && day <= 5) {
-      // Monday to Friday
       if (hours < 17 || (hours === 17 && minutes < 30)) {
         shouldCallAxios = true;
       }
     } else if (day === 6) {
-      // Saturday
       if (hours < 14) {
         shouldCallAxios = true;
       }
     }
 
-    // 📤 Make the axios call if allowed
-    if (shouldCallAxios) {
-      const user = await User.findById(fld_adminid);
-      if (user && user.fld_email) {
+    const user = await User.findById(fld_adminid);
+
+    if (shouldCallAxios && user && user.fld_email) {
+      try {
         await axios.post('https://webexback-06cc.onrender.com/api/users/autosendleftmessage', {
           email: user.fld_email
         });
+      } catch (axiosErr) {
+        console.error('Axios error (autosendleftmessage):', axiosErr.message);
+        // Optional: log this error to DB or continue silently
+      }
+    }
+
+    if (user && user.fld_email) {
+      try {
+        const res = await axios.post('https://rapidcollaborate.com/call_calendar/cronjobs/markAsAbsent', {
+          email: user.fld_email
+        });
+        console.log(res)
+      } catch (axiosErr) {
+        console.error('Axios error (markAsAbsent):', axiosErr.message);
+        // Optional: log this error to DB or continue silently
       }
     }
 
     return res.status(201).json({ message: 'Work summary created successfully', worksummary });
   } catch (error) {
+    console.error('Main Error:', error);
     return res.status(500).json({ message: 'Error creating work summary', error: error.message });
   }
 };
@@ -105,7 +116,7 @@ exports.getWorksummaryByAdminId = async (req, res) => {
   const { id } = req.params;
 
   try {
-    const worksummary = await Worksummary.find({fld_adminid:id});
+    const worksummary = await Worksummary.find({ fld_adminid: id });
     if (!worksummary) return res.status(404).json({ message: 'Work summary not found' });
     return res.status(200).json(worksummary);
   } catch (error) {

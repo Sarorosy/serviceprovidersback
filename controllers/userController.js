@@ -174,11 +174,11 @@ exports.createUser = async (req, res) => {
 
     const emailBody = new FormData();
     // emailBody.append('webname', "Service provider platform");
-     emailBody.append('from', "info@thehrbulb.com");
-      emailBody.append('to', req.body.fld_email);
-      emailBody.append('name',req.body.fld_name);
-     emailBody.append('subject', `Account created on Service provider platform`);
-     emailBody.append('body', `
+    emailBody.append('from', "info@thehrbulb.com");
+    emailBody.append('to', req.body.fld_email);
+    emailBody.append('name', req.body.fld_name);
+    emailBody.append('subject', `Account created on Service provider platform`);
+    emailBody.append('body', `
        Hi ${req.body.fld_name},<br/><br/>
        Greetings from Service provider platform!<br/><br/>
        Your account has been successfully created. You can login using the following credentials:<br/><br/>
@@ -188,18 +188,18 @@ exports.createUser = async (req, res) => {
        Thanks & Regards,<br/>
        Service provider platform<br/>
      `);
- 
-     // Send email notification
-     await axios.post('https://apacvault.com/sppanelregmail.php', emailBody, {
-       headers: emailBody.getHeaders(),
-     });
 
-     const emailSP = new FormData();
-      emailSP.append('from', "info@thehrbulb.com");
-      emailSP.append('to', req.body.fld_email); // Send this email to the service provider's email
-      emailSP.append('name', req.body.fld_name);
-      emailSP.append('subject', `Update Profile and Bank Details`);
-      emailSP.append('body', `
+    // Send email notification
+    await axios.post('https://apacvault.com/sppanelregmail.php', emailBody, {
+      headers: emailBody.getHeaders(),
+    });
+
+    const emailSP = new FormData();
+    emailSP.append('from', "info@thehrbulb.com");
+    emailSP.append('to', req.body.fld_email); // Send this email to the service provider's email
+    emailSP.append('name', req.body.fld_name);
+    emailSP.append('subject', `Update Profile and Bank Details`);
+    emailSP.append('body', `
         Hi ${req.body.fld_name},<br/><br/>
         Greetings from Service provider platform!<br/><br/>
         We are excited to have you onboard. To complete your profile, please update your profile documents and bank details.<br/><br/>
@@ -209,10 +209,10 @@ exports.createUser = async (req, res) => {
         Service provider platform<br/>
       `);
 
-      // Send email to the SP for profile and bank details update
-      await axios.post('https://apacvault.com/sppanelregmail.php', emailSP, {
-        headers: emailSP.getHeaders(),
-      });
+    // Send email to the SP for profile and bank details update
+    await axios.post('https://apacvault.com/sppanelregmail.php', emailSP, {
+      headers: emailSP.getHeaders(),
+    });
 
     // Return the created user
     res.status(201).json(user);
@@ -258,7 +258,7 @@ exports.updateUser = async (req, res) => {
       user_add_access: req.body.user_add_access || user.user_add_access,
       user_edit_access: req.body.user_edit_access || user.user_edit_access,
       user_delete_access: req.body.user_delete_access || user.user_delete_access,
-      quit_services : req.body.quit_services || user.quit_services,
+      quit_services: req.body.quit_services || user.quit_services,
       location: req.body.location || user.location,
       fld_ifsc: req.body.fld_ifsc || user.fld_ifsc,
       fld_addedon: new Date(), // Update the timestamp
@@ -320,7 +320,7 @@ exports.updateUser = async (req, res) => {
         }
       }
     }
-    
+
 
     if (req.body.fld_decrypt_password) {
       const hashedPassword = await bcrypt.hash(req.body.fld_decrypt_password, 10);
@@ -472,6 +472,12 @@ exports.loginUser = async (req, res) => {
           email: user.fld_email
         });
       }
+
+      await axios.post('https://rapidcollaborate.com/call_calendar/cronjobs/markAsPresent', {
+        email: user.fld_email
+      });
+
+
     }
   } catch (error) {
     console.error(error); // Log error for debugging
@@ -482,6 +488,8 @@ exports.loginUser = async (req, res) => {
 // Logout user and update login history
 exports.logoutUser = async (req, res) => {
   const userId = req.user.id; // Assuming you're using some middleware to get the authenticated user's ID
+
+  
 
   try {
     const today = new Date();
@@ -501,6 +509,8 @@ exports.logoutUser = async (req, res) => {
     // Update the end time
     loginRecord.fld_end_time = endTime;
     await loginRecord.save();
+
+    
 
     res.status(200).json({ message: 'Logout successful', loginRecord });
   } catch (error) {
@@ -687,7 +697,7 @@ exports.getAbsentServiceProviderEmails = async (req, res) => {
     const loginDate = today.toISOString().split('T')[0]; // YYYY-MM-DD
 
     // Step 1: Get all SERVICE_PROVIDER users
-    const serviceProviders = await User.find({ fld_admin_type: 'SERVICE_PROVIDER', status: 'Active'  }, { _id: 1, fld_email: 1 });
+    const serviceProviders = await User.find({ fld_admin_type: 'SERVICE_PROVIDER', status: 'Active' }, { _id: 1, fld_email: 1 });
 
     const serviceProviderIds = serviceProviders.map(user => user._id);
 
@@ -703,10 +713,10 @@ exports.getAbsentServiceProviderEmails = async (req, res) => {
     const absentEmails = serviceProviders
       .filter(user => !loggedInUserIds.includes(user._id.toString()))
       .map(user => user.fld_email);
-    
-      await axios.post('http://webexback-06cc.onrender.com/api/users/autosendleavemessage', {
-          emails: absentEmails
-        });
+
+    await axios.post('http://webexback-06cc.onrender.com/api/users/autosendleavemessage', {
+      emails: absentEmails
+    });
 
     return res.status(200).json({ emails: absentEmails });
   } catch (error) {
@@ -721,7 +731,7 @@ exports.getAbsentServiceProviderEmailData = async (req, res) => {
     const loginDate = today.toISOString().split('T')[0]; // YYYY-MM-DD
 
     // Step 1: Get all SERVICE_PROVIDER users
-    const serviceProviders = await User.find({ fld_admin_type: 'SERVICE_PROVIDER', status: 'Active'  }, { _id: 1, fld_email: 1 });
+    const serviceProviders = await User.find({ fld_admin_type: 'SERVICE_PROVIDER', status: 'Active' }, { _id: 1, fld_email: 1 });
 
     const serviceProviderIds = serviceProviders.map(user => user._id);
 
@@ -737,9 +747,9 @@ exports.getAbsentServiceProviderEmailData = async (req, res) => {
     const absentEmails = serviceProviders
       .filter(user => !loggedInUserIds.includes(user._id.toString()))
       .map(user => user.fld_email);
-    
-      
-    return res.status(200).json({ emails: absentEmails });
+
+
+    return res.status(200).json(absentEmails);
   } catch (error) {
     console.error('Error fetching absent service provider emails:', error);
     return res.status(500).json({ message: 'Server error', error: error.message });
