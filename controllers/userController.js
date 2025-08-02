@@ -410,6 +410,10 @@ exports.loginUser = async (req, res) => {
       return res.status(401).json({ message: 'Invalid username or password' });
     }
 
+    if(user.status === "Inactive"){
+      return res.status(401).json({ message: 'Your Account is Inactive, please Contact Administrator' });
+    }
+
     // Validate password using bcrypt
     const isMatch = await bcrypt.compare(password, user.fld_password);
     if (!isMatch) {
